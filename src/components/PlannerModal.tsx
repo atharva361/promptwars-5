@@ -248,6 +248,36 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
             </select>
           </div>
 
+          {/* Optional Couple Photo Upload */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+              Couple Photo / Wedding Cover Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const res = ev.target?.result as string;
+                    if (res) {
+                      try {
+                        localStorage.setItem('shaadi_hero_photo', res);
+                      } catch {}
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 cursor-pointer"
+            />
+            <p className="text-[11px] text-stone-500 mt-1">
+              Add your own photo from your device to personalize your celebration
+            </p>
+          </div>
+
           {/* Submit Action */}
           <div className="pt-4 border-t border-stone-200 flex items-center justify-end gap-3">
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, MapPin, Sparkles, Plus, Utensils, Shirt, ChevronRight, CheckCircle2, Music } from 'lucide-react';
+import { Clock, MapPin, Sparkles, Plus, Utensils, Shirt, ChevronRight, CheckCircle2, Music, Camera, RefreshCw } from 'lucide-react';
 import { WeddingEvent } from '../types/wedding';
 
 interface TimelineViewProps {
@@ -9,7 +9,14 @@ interface TimelineViewProps {
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }) => {
   const [selectedDay, setSelectedDay] = useState<number | 'all'>('all');
-  const [expandedEventId, setExpandedEventId] = useState<string | null>(events[0]?.id || null);
+  const [customPhotos, setCustomPhotos] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('shaadi_event_photos');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
   // Group days
   const dayNumbers = Array.from(new Set(events.map((e) => e.dayNumber))).sort((a, b) => a - b);
@@ -17,31 +24,67 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }
   const filteredEvents =
     selectedDay === 'all' ? events : events.filter((e) => e.dayNumber === selectedDay);
 
-  // Map appropriate generated visual asset according to ceremony type
-  const getEventVisual = (eventName: string) => {
+  // Map appropriate generated visual asset according to ceremony type (using deployment-safe public paths)
+  const getEventVisual = (eventId: string, eventName: string) => {
+    if (customPhotos[eventId]) {
+      return {
+        image: customPhotos[eventId],
+        badge: 'Custom Photo Added',
+      };
+    }
+
     const name = eventName.toLowerCase();
     if (name.includes('haldi')) {
       return {
-        image: '/src/assets/images/indian_haldi_ceremony_1793366416386.jpg',
+        image: '/images/haldi_ceremony.jpg',
         badge: 'Turmeric & Marigolds',
       };
     }
     if (name.includes('sangeet') || name.includes('mehendi') || name.includes('cocktail')) {
       return {
-        image: '/src/assets/images/indian_sangeet_celebration_1793366415709.jpg',
+        image: '/images/sangeet_celebration.jpg',
         badge: 'Dhol, Beats & Henna',
       };
     }
     if (name.includes('reception') || name.includes('banquet') || name.includes('dinner')) {
       return {
-        image: '/src/assets/images/indian_wedding_banquet_1793366417138.jpg',
+        image: '/images/wedding_banquet.jpg',
         badge: 'Royal Awadhi Feast',
       };
     }
     return {
-      image: '/src/assets/images/indian_wedding_hero_1793366415158.jpg',
+      image: '/images/hero_mandap.jpg',
       badge: 'Vedic Mandap & Vows',
     };
+  };
+
+  const handleEventPhotoUpload = (eventId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          const updated = { ...customPhotos, [eventId]: result };
+          setCustomPhotos(updated);
+          try {
+            localStorage.setItem('shaadi_event_photos', JSON.stringify(updated));
+          } catch {
+            // Quota safeguard
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResetEventPhoto = (eventId: string) => {
+    const updated = { ...customPhotos };
+    delete updated[eventId];
+    setCustomPhotos(updated);
+    try {
+      localStorage.setItem('shaadi_event_photos', JSON.stringify(updated));
+    } catch {}
   };
 
   return (
@@ -90,8 +133,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }
       {/* Events Grid / Timeline */}
       <div className="space-y-6">
         {filteredEvents.map((event, idx) => {
-          const visual = getEventVisual(event.name);
-          const isExpanded = expandedEventId === event.id;
+          const visual = getEventVisual(event.id, event.name);
+          const hasCustomPhoto = Boolean(customPhotos[event.id]);
 
           return (
             <div
@@ -99,13 +142,17 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }
               className="bg-white rounded-2xl border border-stone-200/90 shadow-2xs hover:shadow-md transition-all overflow-hidden"
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-                {/* Event Photo Preview */}
-                <div className="lg:col-span-4 relative h-52 sm:h-64 lg:h-auto overflow-hidden">
+                {/* Event Photo Preview with Add/Upload Button */}
+                <div className="lg:col-span-4 relative h-56 sm:h-64 lg:h-auto overflow-hidden group">
                   <img
                     src={visual.image}
                     alt={event.name}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/hero_mandap.jpg';
+                    }}
                   />
                   <div className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-xs text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -113,6 +160,30 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }
                   </div>
                   <div className="absolute bottom-3 left-3 bg-amber-950/80 backdrop-blur-xs text-amber-200 text-xs px-2.5 py-0.5 rounded font-medium">
                     {visual.badge}
+                  </div>
+
+                  {/* Add / Change Photo Button for this Ceremony */}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                    <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-stone-900/80 hover:bg-stone-900 text-white text-[11px] font-medium backdrop-blur-xs border border-white/20 cursor-pointer shadow-xs">
+                      <Camera className="w-3 h-3 text-amber-300" />
+                      <span>{hasCustomPhoto ? 'Change' : 'Add Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleEventPhotoUpload(event.id, e)}
+                      />
+                    </label>
+                    {hasCustomPhoto && (
+                      <button
+                        type="button"
+                        onClick={() => handleResetEventPhoto(event.id)}
+                        className="p-1 rounded-md bg-stone-900/80 hover:bg-stone-900 text-white text-[11px] border border-white/20 cursor-pointer"
+                        title="Reset to default photo"
+                      >
+                        <RefreshCw className="w-3 h-3 text-amber-300" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

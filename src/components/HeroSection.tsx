@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, MapPin, Users, IndianRupee, Sparkles, SlidersHorizontal, CheckCircle2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Calendar, MapPin, Users, IndianRupee, Sparkles, SlidersHorizontal, CheckCircle2, Camera, Upload, RefreshCw } from 'lucide-react';
 import { PlanInputParams } from '../types/wedding';
 
 interface HeroSectionProps {
@@ -21,9 +21,42 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onQuickGenerate,
   isGenerating,
 }) => {
+  // Allow user to upload or change wedding photo, persisting in localStorage
+  const [heroPhoto, setHeroPhoto] = useState<string>(() => {
+    return localStorage.getItem('shaadi_hero_photo') || '/images/hero_mandap.jpg';
+  });
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsPhotoUploading(true);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setHeroPhoto(result);
+          try {
+            localStorage.setItem('shaadi_hero_photo', result);
+          } catch {
+            // Storage quota warning fallback
+          }
+        }
+        setIsPhotoUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResetPhoto = () => {
+    const defaultPhoto = '/images/hero_mandap.jpg';
+    setHeroPhoto(defaultPhoto);
+    localStorage.removeItem('shaadi_hero_photo');
+  };
+
   return (
     <div className="relative overflow-hidden bg-gradient-to-b from-amber-50/70 via-[#FFFDF9] to-[#FFFDF9] pt-6 pb-12 border-b border-amber-200/50">
-      {/* Subtle traditional Indian floral/jali accent watermark pattern */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Column: Editorial Headline & Couple Identity */}
@@ -122,17 +155,55 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Hero Image with Palace Mandap Showcase */}
+          {/* Right Column: Hero Image with Palace Mandap Showcase and Photo Add/Upload Button */}
           <div className="lg:col-span-5 relative flex items-center">
             <div className="w-full relative rounded-2xl overflow-hidden border-2 border-amber-300/80 shadow-xl group">
               <img
-                src="/src/assets/images/indian_wedding_hero_1793366415158.jpg"
-                alt="Royal Indian Wedding Mandap in Rajasthan Palace"
+                src={heroPhoto}
+                alt="Royal Indian Wedding Mandap"
                 className="w-full h-[380px] sm:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  // Resilient fallback to reliable public image or SVG placeholder
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== window.location.origin + '/images/hero_mandap.jpg') {
+                    target.src = '/images/hero_mandap.jpg';
+                  }
+                }}
               />
+
+              {/* Top controls: Add / Upload Photo Button */}
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/png, image/jpeg, image/webp"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900/85 hover:bg-stone-900 text-white text-xs font-semibold backdrop-blur-xs border border-white/20 shadow-sm transition-all cursor-pointer"
+                  title="Add or upload your own couple or venue photo"
+                >
+                  <Camera className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{isPhotoUploading ? 'Uploading...' : 'Add / Change Photo'}</span>
+                </button>
+                {heroPhoto !== '/images/hero_mandap.jpg' && (
+                  <button
+                    type="button"
+                    onClick={handleResetPhoto}
+                    className="p-1.5 rounded-lg bg-stone-900/85 hover:bg-stone-900 text-white text-xs backdrop-blur-xs border border-white/20 transition-all cursor-pointer"
+                    title="Reset to default palace mandap"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-amber-300" />
+                  </button>
+                )}
+              </div>
+
               {/* Subtle gradient vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                 <span className="text-xs uppercase font-bold tracking-wider text-amber-300 mb-1">
                   Heritage Mandap Architecture
                 </span>

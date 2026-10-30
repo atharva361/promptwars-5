@@ -14,6 +14,21 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
+// Ensure all photo paths work seamlessly in development and production deployments
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/public/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/src/assets/images', express.static(path.join(__dirname, 'public/images')));
+
+// Photo upload endpoint
+app.post('/api/upload-photo', (req, res) => {
+  const { dataUrl } = req.body;
+  if (!dataUrl) {
+    return res.status(400).json({ success: false, error: 'No photo data provided' });
+  }
+  return res.json({ success: true, url: dataUrl });
+});
+
 // Server-side Gemini initialization
 const apiKey = process.env.GEMINI_API_KEY || '';
 let ai: GoogleGenAI | null = null;
