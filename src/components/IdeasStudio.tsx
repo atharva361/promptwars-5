@@ -39,9 +39,12 @@ export const IdeasStudio: React.FC<IdeasStudioProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category, tradition, coupleName }),
       });
-      const data = await res.json();
-      if (data.ideas && data.ideas.length > 0) {
-        setIdeas(data.ideas);
+      const contentType = res.headers.get('content-type');
+      if (res.ok && contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.ideas && data.ideas.length > 0) {
+          setIdeas(data.ideas);
+        }
       }
     } catch (err) {
       console.error('Failed to generate category ideas:', err);

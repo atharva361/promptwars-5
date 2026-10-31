@@ -136,7 +136,7 @@ Return a valid JSON object matching this exact structure:
 }`;
 
     if (ai) {
-      const response = await ai.models.generateContent({
+      const generatePromise = ai.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: prompt,
         config: {
@@ -146,7 +146,13 @@ Return a valid JSON object matching this exact structure:
         },
       });
 
-      const responseText = response.text || '{}';
+      // Strict 4.5s timeout so the server NEVER hangs or causes Nginx 504 HTML errors
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('AI Generation Timeout')), 4500)
+      );
+
+      const response: any = await Promise.race([generatePromise, timeoutPromise]);
+      const responseText = response?.text || '{}';
       const parsed = JSON.parse(responseText);
       return res.json({ success: true, plan: parsed });
     } else {
@@ -165,10 +171,10 @@ Return a valid JSON object matching this exact structure:
       return res.json({ success: true, plan: fallbackPlan, isCuratedFallback: true });
     }
   } catch (err: any) {
-    console.error('Error in /api/generate-plan:', err);
-    // Graceful fallback so the client UI never experiences a broken state
+    console.error('Handled in /api/generate-plan:', err.message);
+    // Instant rich fallback so the client UI ALWAYS receives valid JSON
     const fallbackPlan = generateFallbackPlan(req.body);
-    return res.json({ success: true, plan: fallbackPlan, errorCaught: err.message });
+    return res.json({ success: true, plan: fallbackPlan, fallbackReason: err.message });
   }
 });
 
@@ -192,7 +198,7 @@ Return a valid JSON array of objects:
 ]`;
 
     if (ai) {
-      const response = await ai.models.generateContent({
+      const generatePromise = ai.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: prompt,
         config: {
@@ -200,7 +206,12 @@ Return a valid JSON array of objects:
         },
       });
 
-      const parsed = JSON.parse(response.text || '[]');
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('AI Generation Timeout')), 4500)
+      );
+
+      const response: any = await Promise.race([generatePromise, timeoutPromise]);
+      const parsed = JSON.parse(response?.text || '[]');
       return res.json({ success: true, ideas: parsed });
     } else {
       return res.json({
@@ -234,8 +245,30 @@ Return a valid JSON array of objects:
       });
     }
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.json({
+      success: true,
+      ideas: [
+        {
+          title: 'Royal Rose Petal Shower & Vintage Car Baraat',
+          description: 'Grand royal entry featuring live dhol ensembles and fragrant rose petals.',
+          costLevel: 'Moderate',
+          proTip: 'Confirm acoustic sound levels with the venue.',
+        },
+        {
+          title: 'Custom Calligraphy Mithai Favors',
+          description: 'Handcrafted dry fruit and artisanal sweets in velvet boxes with couple initials.',
+          costLevel: 'Budget-Friendly',
+          proTip: 'Order 3 weeks prior to wedding date.',
+        },
+      ],
+      errorCaught: err.message,
+    });
   }
+});
+
+// Guard: Unmatched API routes must return JSON, never HTML
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ success: false, error: `API route not found: ${req.method} ${req.path}` });
 });
 
 // Helper for curated Indian wedding fallback plan

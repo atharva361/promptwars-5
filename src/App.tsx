@@ -53,22 +53,23 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentParams),
       });
-      const data = await res.json();
-      if (data.plan) {
-        setPlan(data.plan);
-        triggerCelebration();
+
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data?.plan) {
+          setPlan(data.plan);
+          triggerCelebration();
+        }
+      } else {
+        console.warn('API returned non-JSON or status was not ok, keeping active curated plan.');
       }
     } catch (err) {
-      console.error('Plan generation failed:', err);
+      console.warn('Plan generation network fallback:', err);
     } finally {
       setIsGenerating(false);
     }
   };
-
-  // Initial load
-  useEffect(() => {
-    generatePlan(params);
-  }, []);
 
   const handlePrintSchedule = () => {
     window.print();
