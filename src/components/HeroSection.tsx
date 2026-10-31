@@ -160,7 +160,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="w-full relative rounded-2xl overflow-hidden border-2 border-amber-300/80 shadow-xl group">
               <img
                 src={heroPhoto}
-                alt="Royal Indian Wedding Mandap"
+                alt="Royal Indian Wedding Mandap with floral decoration"
+                width={600}
+                height={440}
+                loading="eager"
+                decoding="async"
                 className="w-full h-[380px] sm:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
                 referrerPolicy="no-referrer"
                 onError={(e) => {

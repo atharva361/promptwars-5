@@ -58,7 +58,12 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-planner-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+    >
       <div className="relative bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-amber-300/80 overflow-hidden my-8">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 px-6 py-5 text-white flex items-center justify-between">
@@ -67,7 +72,7 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
               <Crown className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h3 className="font-cinzel text-xl font-bold tracking-tight">
+              <h3 id="modal-planner-title" className="font-cinzel text-xl font-bold tracking-tight">
                 GenAI Wedding Planner Studio
               </h3>
               <p className="text-xs text-amber-200/90">
@@ -89,10 +94,11 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
           {/* Couple Names */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+              <label htmlFor="input-bride-name" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
                 Bride's Name
               </label>
               <input
+                id="input-bride-name"
                 type="text"
                 required
                 value={formData.brideName}
@@ -103,10 +109,11 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+              <label htmlFor="input-groom-name" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
                 Groom's Name
               </label>
               <input
+                id="input-groom-name"
                 type="text"
                 required
                 value={formData.groomName}
@@ -120,7 +127,7 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
           {/* Budget in Lakhs */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1">
+              <label htmlFor="input-budget-lakhs" className="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1">
                 <IndianRupee className="w-3.5 h-3.5 text-amber-600" />
                 Total Wedding Budget (₹ Lakhs)
               </label>
@@ -129,6 +136,7 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
               </span>
             </div>
             <input
+              id="input-budget-lakhs"
               type="range"
               min="10"
               max="250"
@@ -145,6 +153,7 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
                   type="button"
                   key={b}
                   onClick={() => setFormData({ ...formData, budgetLakhs: b })}
+                  aria-label={`Select ₹${b} Lakhs budget`}
                   className={`px-2.5 py-1 text-xs rounded-md transition-colors cursor-pointer ${
                     formData.budgetLakhs === b
                       ? 'bg-amber-800 text-white font-bold'
@@ -160,11 +169,12 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
           {/* Guests & Duration */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
+              <label htmlFor="input-guest-count" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-amber-600" />
                 Estimated Guest Count
               </label>
               <input
+                id="input-guest-count"
                 type="number"
                 min="30"
                 max="2500"
@@ -176,11 +186,12 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
+              <label htmlFor="input-celebration-days" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-amber-600" />
                 Celebration Duration
               </label>
               <select
+                id="input-celebration-days"
                 value={formData.days}
                 onChange={(e) => setFormData({ ...formData, days: parseInt(e.target.value, 10) })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/50 text-sm bg-white"
@@ -195,11 +206,12 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
 
           {/* City / Destination */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
+            <label htmlFor="input-wedding-city" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-amber-600" />
               Wedding City / Destination
             </label>
             <select
+              id="input-wedding-city"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/50 text-sm bg-white"
@@ -214,10 +226,11 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
 
           {/* Cultural Traditions */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+            <label htmlFor="input-wedding-tradition" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
               Cultural & Regional Traditions
             </label>
             <select
+              id="input-wedding-tradition"
               value={formData.tradition}
               onChange={(e) => setFormData({ ...formData, tradition: e.target.value })}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/50 text-sm bg-white"
@@ -232,10 +245,11 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
 
           {/* Theme & Vibe */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+            <label htmlFor="input-wedding-vibe" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
               Atmosphere & Theme
             </label>
             <select
+              id="input-wedding-vibe"
               value={formData.vibe}
               onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
               className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/50 text-sm bg-white"
@@ -250,10 +264,11 @@ export const PlannerModal: React.FC<PlannerModalProps> = ({
 
           {/* Optional Couple Photo Upload */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
+            <label htmlFor="input-wedding-photo" className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">
               Couple Photo / Wedding Cover Image
             </label>
             <input
+              id="input-wedding-photo"
               type="file"
               accept="image/*"
               onChange={(e) => {

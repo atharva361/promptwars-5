@@ -77,6 +77,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-stone-900 flex flex-col font-sans">
+      {/* Accessible Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-900 focus:text-white focus:rounded-lg focus:shadow-xl focus:ring-2 focus:ring-amber-400 focus:outline-hidden"
+      >
+        Skip to main content
+      </a>
+
       {/* Royal Header */}
       <Header
         onOpenPlanner={() => setIsPlannerOpen(true)}
@@ -86,7 +94,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero Section */}
         <HeroSection
           params={params}
@@ -101,8 +109,11 @@ export default function App() {
         {/* Sticky Quick Navigation Tabs */}
         <div className="sticky top-18 z-30 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-stone-200/80 py-3 shadow-2xs">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-            <div className="flex items-center gap-2">
+            <div role="tablist" aria-label="Wedding Planning Sections" className="flex items-center gap-2">
               <button
+                role="tab"
+                aria-selected={activeSection === 'timelines'}
+                aria-controls="timelines"
                 onClick={() => {
                   setActiveSection('timelines');
                   document.getElementById('timelines')?.scrollIntoView({ behavior: 'smooth' });
@@ -116,6 +127,9 @@ export default function App() {
                 Ritual Timelines
               </button>
               <button
+                role="tab"
+                aria-selected={activeSection === 'budget'}
+                aria-controls="budget"
                 onClick={() => {
                   setActiveSection('budget');
                   document.getElementById('budget')?.scrollIntoView({ behavior: 'smooth' });
@@ -129,6 +143,9 @@ export default function App() {
                 INR Budget (₹{params.budgetLakhs}L)
               </button>
               <button
+                role="tab"
+                aria-selected={activeSection === 'vendors'}
+                aria-controls="vendors"
                 onClick={() => {
                   setActiveSection('vendors');
                   document.getElementById('vendors')?.scrollIntoView({ behavior: 'smooth' });
@@ -142,6 +159,9 @@ export default function App() {
                 Vendor Checklist
               </button>
               <button
+                role="tab"
+                aria-selected={activeSection === 'ideas'}
+                aria-controls="ideas"
                 onClick={() => {
                   setActiveSection('ideas');
                   document.getElementById('ideas')?.scrollIntoView({ behavior: 'smooth' });

@@ -146,7 +146,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, onAddEvent }
                 <div className="lg:col-span-4 relative h-56 sm:h-64 lg:h-auto overflow-hidden group">
                   <img
                     src={visual.image}
-                    alt={event.name}
+                    alt={`${event.name} celebration ceremony`}
+                    width={400}
+                    height={280}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                     onError={(e) => {

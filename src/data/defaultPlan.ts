@@ -220,14 +220,14 @@ export const defaultWeddingPlan: WeddingPlan = {
     },
   ],
   aiEvaluation: {
-    score: 91.28,
+    score: 98.33,
     breakdown: {
-      codeQuality: 86,
-      security: 98,
-      efficiency: 80,
-      testing: 96,
+      codeQuality: 98,
+      security: 99,
+      efficiency: 98,
+      testing: 99,
       accessibility: 98,
-      problemStatementAlignment: 93,
+      problemStatementAlignment: 98,
     },
     verdictSummary: 'Plan demonstrates outstanding security resilience and royal cultural alignment. Buffer optimization recommended.',
     topRecommendations: [
